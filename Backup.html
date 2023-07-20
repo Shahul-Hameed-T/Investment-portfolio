@@ -1,0 +1,75 @@
+import java.io.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.sql.*;
+
+public class InvestmentManagerLoginValidate extends HttpServlet {
+		// JDBC driver name and database URL
+        static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
+        static final String DB_URL="jdbc:mysql://localhost:3306/Miniproject";
+  
+        //  Database credentials
+        static final String USER = "root";
+        static final String PASS = "mysql";
+
+        public void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+        response.setContentType("text/html");
+		PrintWriter out = response.getWriter();
+        
+        String email = request.getParameter("email");
+        String password_val = request.getParameter("password");
+        String correct_password = "";
+        try {
+            // Register JDBC driver
+            Class.forName(JDBC_DRIVER);
+            //Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Open a connection
+            Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+            // Execute SQL query
+            Statement stmt = conn.createStatement();
+            String sql = "SELECT * FROM investment_manager_login WHERE email = '" + email + "'";
+            ResultSet rs = stmt.executeQuery(sql);
+            
+            if(rs.next())
+            {
+                correct_password = rs.getString("password");
+
+                if(((String)password_val).equalsIgnoreCase((String)correct_password))
+                {
+                
+                    // Getting RequestDispatcher object
+                    // for collaborating with Welcome servlet
+                    
+                    RequestDispatcher rd = request.getRequestDispatcher("profile_view_loader.html");
+                    // forwarding the request to Welcome.java
+                    rd.forward(request, response);
+                }
+                else
+                {
+                    RequestDispatcher rd = request.getRequestDispatcher("login_loader.html");
+                    rd.forward(request, response); 
+                }
+            }
+            else 
+            {
+                RequestDispatcher rd = request.getRequestDispatcher("SignUp.html");
+                // forwarding the request to Welcome.java
+                rd.forward(request, response);   
+            }
+
+            // Clean-up environment
+            rs.close();
+            stmt.close();
+            conn.close();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+}
+
+
